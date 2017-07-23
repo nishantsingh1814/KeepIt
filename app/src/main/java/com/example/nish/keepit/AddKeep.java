@@ -2,8 +2,10 @@ package com.example.nish.keepit;
 
 import android.app.Activity;
 import android.app.AlarmManager;
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -13,12 +15,18 @@ import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
+import android.os.Build;
 import android.os.SystemClock;
+import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -26,9 +34,12 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TimePicker;
 import android.widget.Toast;
+
+import com.squareup.picasso.Picasso;
 
 import static android.R.attr.id;
 
@@ -43,6 +54,10 @@ public class AddKeep extends AppCompatActivity implements View.OnClickListener {
     DatePickerDialog.OnDateSetListener date;
     TimePickerDialog.OnTimeSetListener time;
     FloatingActionButton addFine;
+    private static final int CAMERA_REQUEST = 1;
+    private static final int GALLERY_REQUEST = 2;
+
+    ImageView image;
     KeepActive todo;
     //static int dbId;
 
@@ -60,6 +75,7 @@ public class AddKeep extends AppCompatActivity implements View.OnClickListener {
         repeat = (CheckBox) findViewById(R.id.repeat);
         loop = (Spinner) findViewById(R.id.loop);
         dateButton.setOnClickListener(this);
+        image=(ImageView)findViewById(R.id.keep_photo);
         timeButton.setOnClickListener(this);
 
         ArrayList<String> list = new ArrayList<>();
@@ -89,23 +105,22 @@ public class AddKeep extends AppCompatActivity implements View.OnClickListener {
                     return;
                 }
                 long epoch = mCalendar.getTimeInMillis();
-                if(epoch<Calendar.getInstance().getTimeInMillis()){
-                    Toast.makeText(AddKeep.this,"select future time",Toast.LENGTH_LONG).show();
+                if (epoch < Calendar.getInstance().getTimeInMillis()) {
+                    Toast.makeText(AddKeep.this, "select future time", Toast.LENGTH_LONG).show();
                     return;
                 }
-                todo=new KeepActive();
+                todo = new KeepActive();
 
-                todo.title=title.getText().toString();
-                todo.description=description.getText().toString();
-                todo.date=epoch;
+                todo.title = title.getText().toString();
+                todo.description = description.getText().toString();
+                todo.date = epoch;
 
 
                 if (repeat.isChecked()) {
-                    todo.repeat=loop.getSelectedItem().toString();
-                    setAlarms(epoch,loop.getSelectedItem().toString());
-                }
-                else
-                    setAlarms(epoch,null);
+                    todo.repeat = loop.getSelectedItem().toString();
+                    setAlarms(epoch, loop.getSelectedItem().toString());
+                } else
+                    setAlarms(epoch, null);
                 todo.save();
 
                 setResult(Activity.RESULT_OK);
@@ -173,34 +188,45 @@ public class AddKeep extends AppCompatActivity implements View.OnClickListener {
         };
     }
 
-    private void setAlarms(long epoch,String repeatInt) {
+    private void setAlarms(long epoch, String repeatInt) {
         AlarmManager am = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
         Intent i = new Intent(this, AlarmReceiver.class);
-        i.putExtra("title",title.getText().toString());
-        i.putExtra("description",description.getText().toString());
-        i.putExtra("epoch",epoch);
-        i.putExtra("repeating",repeat.isChecked());
-        i.putExtra("repeatInt",repeatInt);
+        i.putExtra("title", title.getText().toString());
+        i.putExtra("description", description.getText().toString());
+        i.putExtra("epoch", epoch);
+        i.putExtra("repeating", repeat.isChecked());
+        i.putExtra("repeatInt", repeatInt);
 
 
-        PendingIntent operation = PendingIntent.getBroadcast(this,(int) epoch, i, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent operation = PendingIntent.getBroadcast(this, (int) epoch, i, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        if(repeatInt==null) {
+        if (repeatInt == null) {
             am.set(AlarmManager.RTC, epoch, operation);
-        }
-        else if(repeatInt.equals("Every Minute")){
-            am.setRepeating(AlarmManager.RTC,epoch,60*1000,operation);
-        }
-        else if(repeatInt.equals("Every Hour")){
-            am.setRepeating(AlarmManager.RTC,epoch,60*60*1000,operation);
-        }
-        else if(repeatInt.equals("Every Day")){
-            am.setRepeating(AlarmManager.RTC,epoch,24*60*60*1000,operation);
-        }
-        else if(repeatInt.equals("Every Week")){
-            am.setRepeating(AlarmManager.RTC,epoch,7*24*60*60*1000,operation);
+        } else if (repeatInt.equals("Every Minute")) {
+            am.setRepeating(AlarmManager.RTC, epoch, 60 * 1000, operation);
+        } else if (repeatInt.equals("Every Hour")) {
+            am.setRepeating(AlarmManager.RTC, epoch, 60 * 60 * 1000, operation);
+        } else if (repeatInt.equals("Every Day")) {
+            am.setRepeating(AlarmManager.RTC, epoch, 24 * 60 * 60 * 1000, operation);
+        } else if (repeatInt.equals("Every Week")) {
+            am.setRepeating(AlarmManager.RTC, epoch, 7 * 24 * 60 * 60 * 1000, operation);
         }
     }
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        if (item.getItemId() == android.R.id.home) {
+            onBackPressed();
+            finish();
+        }
+        return true;
+    }
+
+
+
+
 
     @Override
     public void onClick(View v) {

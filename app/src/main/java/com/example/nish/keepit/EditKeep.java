@@ -258,7 +258,10 @@ public class EditKeep extends AppCompatActivity implements View.OnClickListener 
     public void onBackPressed() {
 
         super.onBackPressed();
-        setAlarms(dateDb,repeatDb);
+        Log.i("hello", "onBackPressed: ");
+        if(dateDb>System.currentTimeMillis()) {
+            setAlarms(dateDb, repeatDb);
+        }
         Intent seeKeepIntent=new Intent(EditKeep.this,SeeKeep.class);
         seeKeepIntent.putExtra("id",id);
         startActivity(seeKeepIntent);
@@ -268,11 +271,7 @@ public class EditKeep extends AppCompatActivity implements View.OnClickListener 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if(item.getItemId()==android.R.id.home){
-            setAlarms(dateDb,repeatDb);
-            Intent seeKeepIntent=new Intent(EditKeep.this,SeeKeep.class);
-            seeKeepIntent.putExtra("id",id);
-            startActivity(seeKeepIntent);
-            finish();
+            onBackPressed();
         }
         return super.onOptionsItemSelected(item);
     }

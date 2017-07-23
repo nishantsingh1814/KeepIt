@@ -13,6 +13,5 @@ public class KeepIt extends Application{
     public void onCreate() {
         super.onCreate();
         ActiveAndroid.initialize(this);
-
     }
 }

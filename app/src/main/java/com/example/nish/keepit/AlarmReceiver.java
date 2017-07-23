@@ -33,7 +33,6 @@ public class AlarmReceiver extends BroadcastReceiver {
         long id=todo.getId();
 
 
-        Log.i("hello", "onReceive: "+epoch+" "+(int)epoch);
 
         Uri alarmSound = Uri.parse(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM).toString());
 
